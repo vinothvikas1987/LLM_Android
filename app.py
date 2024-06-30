@@ -1,12 +1,11 @@
 from flask import Flask, request, jsonify
-from transformers import AutoModel, AutoConfig
-import torch
+import pickle
 
 app = Flask(__name__)
 
 # Load the model at the start of the application
-config = AutoConfig.from_pretrained('model/config.json')
-model = AutoModel.from_pretrained('model/model.safetensors', config=config)
+# with open('model.pkl', 'rb') as model_file:
+#     model = pickle.load(model_file)
 
 @app.route('/endpoint', methods=['POST'])
 def endpoint():
@@ -26,12 +25,6 @@ def endpoint():
 
 def model_inference(transaction_details, formatted_date):
     # Your model inference logic here
-    # This is a placeholder for actual inference logic
-    # Use the model to generate predictions
-    inputs = {'input_data': transaction_details}  # Adjust this line based on your input format
-    with torch.no_grad():
-        outputs = model(**inputs)
-    # Process the outputs as needed
     return {"status": "success", "details": transaction_details, "date": formatted_date}
 
 if __name__ == '__main__':
