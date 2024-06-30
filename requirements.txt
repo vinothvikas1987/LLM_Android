@@ -1,0 +1,4 @@
+Flask
+safetensors
+transformers
+torch
