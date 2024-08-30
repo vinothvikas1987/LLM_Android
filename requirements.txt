@@ -1,7 +1,7 @@
 Flask==3.0.3
 Werkzeug==3.0.3
 transformers==4.44.1
-torch==2.4.0`
+torch==2.4.0
 pandas==2.2.2
 openpyxl==3.1.5
 numpy==1.26.4
