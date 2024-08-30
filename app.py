@@ -12,9 +12,13 @@ import time
 app = Flask(__name__)
 
 # Load the model and tokenizer at the start of the application
-config = AutoConfig.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\model\config.json')
-model = AutoModelForTokenClassification.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\model')
-tokenizer = BertTokenizerFast.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\tokens')
+# config = AutoConfig.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\model\config.json')
+# model = AutoModelForTokenClassification.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\model')
+# tokenizer = BertTokenizerFast.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\tokens')
+
+config = AutoConfig.from_pretrained('\model\config.json')
+model = AutoModelForTokenClassification.from_pretrained('\model')
+tokenizer = BertTokenizerFast.from_pretrained('\tokens')
 
 DEFAULT_GROUPS = [ 'Mobile','Braodband','TDS', 'Salary',"Mobile Payment", 'Biowaste','Investment and Deposits','Loan', 'Rent', 'EB','UPI Payment', 'OTT','Swiggy','Others']
 
