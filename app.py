@@ -491,8 +491,9 @@
 import os
 from flask import Flask, request, jsonify
 import pandas as pd
-from github import Github
+from github import Github,InputGitTreeElement
 from io import BytesIO
+import base64
 import openpyxl
 from datetime import datetime
 import torch
@@ -501,7 +502,7 @@ from transformers import AutoConfig, AutoModelForTokenClassification, BertTokeni
 app = Flask(__name__)
 
 # GitHub setup
-GITHUB_TOKEN = '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'
+GITHUB_TOKEN = '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'
 # GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 REPO_NAME = 'vinothvikas1987/LLM_Android'
 FILE_PATH = 'android.xlsx'
