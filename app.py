@@ -501,8 +501,8 @@ from transformers import AutoConfig, AutoModelForTokenClassification, BertTokeni
 app = Flask(__name__)
 
 # GitHub setup
-# GITHUB_TOKEN = ''
-GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
+GITHUB_TOKEN = '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'
+# GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 REPO_NAME = 'vinothvikas1987/LLM_Android'
 FILE_PATH = 'android.xlsx'
 
