@@ -501,21 +501,21 @@ from transformers import AutoConfig, AutoModelForTokenClassification, BertTokeni
 app = Flask(__name__)
 
 # GitHub setup
-GITHUB_TOKEN = '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'
-# GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
+# GITHUB_TOKEN = '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'
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 REPO_NAME = 'vinothvikas1987/LLM_Android'
-FILE_PATH = 'Android.xlsx'
+FILE_PATH = 'android.xlsx'
 
 g = Github(GITHUB_TOKEN)
 repo = g.get_repo(REPO_NAME)
 
 # Load the model and tokenizer
-# config = AutoConfig.from_pretrained('model/config.json')
-# model = AutoModelForTokenClassification.from_pretrained('model')
-# tokenizer = BertTokenizerFast.from_pretrained('tokens')
-config = AutoConfig.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\model\config.json')
-model = AutoModelForTokenClassification.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\model')
-tokenizer = BertTokenizerFast.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\tokens')
+config = AutoConfig.from_pretrained('model/config.json')
+model = AutoModelForTokenClassification.from_pretrained('model')
+tokenizer = BertTokenizerFast.from_pretrained('tokens')
+# config = AutoConfig.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\model\config.json')
+# model = AutoModelForTokenClassification.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\model')
+# tokenizer = BertTokenizerFast.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\tokens')
 
 
 DEFAULT_GROUPS = ['Mobile', 'Broadband', 'TDS', 'Salary', "Mobile Payment", 'Biowaste', 'Investment and Deposits', 'Loan', 'Rent', 'EB', 'UPI Payment', 'OTT', 'Swiggy', 'Others']
@@ -523,7 +523,7 @@ DEFAULT_GROUPS = ['Mobile', 'Broadband', 'TDS', 'Salary', "Mobile Payment", 'Bio
 def extract_year(date):
     return pd.to_datetime(date).strftime('%Y')
 
-def extract_month(date):
+def extract_month(date): 
     return pd.to_datetime(date).strftime('%B')
 
 def create_new_sheet(writer, year):
@@ -538,7 +538,28 @@ def get_excel_from_github():
     return BytesIO(file_content.decoded_content)
 
 def save_excel_to_github(excel_buffer):
-    repo.update_file(FILE_PATH, f"Update Excel file {datetime.now()}", excel_buffer.getvalue(), repo.get_contents(FILE_PATH).sha)
+    # repo.update_file(FILE_PATH, f"Update Excel file {datetime.now()}", excel_buffer.getvalue(), repo.get_contents(FILE_PATH).sha)
+    excel_buffer.seek(0)
+    content = excel_buffer.getvalue()
+    
+    # Get the current commit
+    ref = repo.get_git_ref('heads/main')
+    commit = repo.get_commit(ref.object.sha)
+    base_tree = commit.tree
+
+    # Create a new blob with the updated Excel file
+    blob = repo.create_git_blob(base64.b64encode(content).decode(), "base64")
+    element = InputGitTreeElement(path=FILE_PATH, mode='100644', type='blob', sha=blob.sha)
+
+    # Create a new tree with the updated file
+    tree = repo.create_git_tree([element], base_tree)
+
+    # Create a new commit
+    parent = repo.get_git_commit(ref.object.sha)
+    commit = repo.create_git_commit(f"Update Excel file {datetime.now()}", tree, [parent])
+
+    # Update the reference
+    ref.edit(commit.sha)
 
 def save_to_excel(cumulative_results):
     df = pd.DataFrame(cumulative_results)
