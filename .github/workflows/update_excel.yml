@@ -15,9 +15,10 @@ jobs:
 
       - name: Install Python 3.9.19
         run: |
-          wget https://github.com/actions/python-versions/releases/download/3.9.19-9962534424/python-3.9.19-linux-22.04-x64.tar.gz
+          w     wget https://github.com/actions/python-versions/releases/download/3.9.19-9962534424/python-3.9.19-linux-22.04-x64.tar.gz
           tar -xzf python-3.9.19-linux-22.04-x64.tar.gz
-          sudo mv python-3.9.19 /usr/local/python3.9.19
+          ls -l  # List files to check the extracted contents
+          sudo mv python-3.9.19-linux-22.04-x64 /usr/local/python3.9.19
           sudo ln -s /usr/local/python3.9.19/bin/python3.9 /usr/bin/python3.9
           sudo ln -s /usr/local/python3.9.19/bin/pip3.9 /usr/bin/pip3.9
           
