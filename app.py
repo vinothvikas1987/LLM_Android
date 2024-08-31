@@ -510,9 +510,13 @@ g = Github(GITHUB_TOKEN)
 repo = g.get_repo(REPO_NAME)
 
 # Load the model and tokenizer
-config = AutoConfig.from_pretrained('model/config.json')
-model = AutoModelForTokenClassification.from_pretrained('model')
-tokenizer = BertTokenizerFast.from_pretrained('tokens')
+# config = AutoConfig.from_pretrained('model/config.json')
+# model = AutoModelForTokenClassification.from_pretrained('model')
+# tokenizer = BertTokenizerFast.from_pretrained('tokens')
+config = AutoConfig.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\model\config.json')
+model = AutoModelForTokenClassification.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\model')
+tokenizer = BertTokenizerFast.from_pretrained(r'C:\Users\admin\Desktop\Data science\vs\aunty\render\llm_android\LLM_Android\tokens')
+
 
 DEFAULT_GROUPS = ['Mobile', 'Broadband', 'TDS', 'Salary', "Mobile Payment", 'Biowaste', 'Investment and Deposits', 'Loan', 'Rent', 'EB', 'UPI Payment', 'OTT', 'Swiggy', 'Others']
 
