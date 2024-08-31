@@ -3,28 +3,29 @@ name: Update Excel File
 on:
   push:
     branches:
-      - main
+      - main  # or your default branch
 
 jobs:
   update-excel:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'  # Automatically uses the latest 3.x version available
+
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3.9 python3.9-distutils python3.9-venv
-          sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
-          sudo update-alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip3.9 1
-          
-      - name: Install pip and dependencies
+          python -m pip install --upgrade pip
+          pip install openpyxl
+
+      - name: Run Python Script to Update Excel
         run: |
-          python3.9 -m ensurepip --upgrade
-          python3.9 -m pip install --upgrade pip
-          pip3.9 install openpyxl
+          python app.py
 
       - name: Commit and Push Excel Updates
         run: |
@@ -34,4 +35,4 @@ jobs:
           git commit -m "Update Excel file with new inference results"
           git push
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Auto-authenticate with GitHub Actions token
