@@ -13,15 +13,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 'Python 3.9.19'  # Replace with your Python version
-
-      - name: Install dependencies
+         - name: Install Python 3.9.19
         run: |
-          python -m pip install --upgrade pip
-          pip install openpyxl
+          wget https://github.com/actions/python-versions/releases/download/3.9.19-9962534424/python-3.9.19-linux-22.04-x64.tar.gz
+          tar -xzf python-3.9.19-linux-22.04-x64.tar.gz
+          sudo mv python-3.9.19 /usr/local/python3.9.19
+          sudo ln -s /usr/local/python3.9.19/bin/python3.9 /usr/bin/python3.9
+          sudo ln -s /usr/local/python3.9.19/bin/pip3.9 /usr/bin/pip3.9
+          
+      - name: Set up Python
+        run: |
+          python3.9 -m pip install --upgrade pip
+          pip3.9 install openpyxl
 
       - name: Commit and Push Excel Updates
         run: |
