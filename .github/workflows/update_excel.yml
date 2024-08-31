@@ -25,7 +25,7 @@ jobs:
 
       - name: Run Python Script to Update Excel
         run: |
-          python app.py
+          python edit_excel.py
 
       - name: Commit and Push Excel Updates
         run: |
