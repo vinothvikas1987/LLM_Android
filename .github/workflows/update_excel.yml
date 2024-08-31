@@ -17,30 +17,8 @@ jobs:
         run: |
           wget https://github.com/actions/python-versions/releases/download/3.9.19-9962534424/python-3.9.19-linux-22.04-x64.tar.gz
 
-      - name: Extract Python 3.9.19
+      - name: Extract Python 3.9.19 and List Contents
         run: |
           tar -xzf python-3.9.19-linux-22.04-x64.tar.gz
           ls -l  # List files to check the extracted contents
           find . -type d  # List directories to see where Python might be
-
-      - name: Install Python 3.9.19
-        run: |
-          # Replace this with the correct directory name after verifying it
-          sudo mv <extracted-directory> /usr/local/python3.9.19
-          sudo ln -s /usr/local/python3.9.19/bin/python3.9 /usr/bin/python3.9
-          sudo ln -s /usr/local/python3.9.19/bin/pip3.9 /usr/bin/pip3.9
-
-      - name: Set up Python
-        run: |
-          python3.9 -m pip install --upgrade pip
-          pip3.9 install openpyxl
-
-      - name: Commit and Push Excel Updates
-        run: |
-          git config --global user.name "Update_excel_done"
-          git config --global user.email "your.email@example.com"
-          git add android.xlsx
-          git commit -m "Update Excel file with new inference results"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Auto-authenticate with GitHub Actions token
