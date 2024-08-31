@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-         - name: Install Python 3.9.19
+      - name: Install Python 3.9.19
         run: |
           wget https://github.com/actions/python-versions/releases/download/3.9.19-9962534424/python-3.9.19-linux-22.04-x64.tar.gz
           tar -xzf python-3.9.19-linux-22.04-x64.tar.gz
