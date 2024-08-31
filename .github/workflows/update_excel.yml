@@ -3,7 +3,7 @@ name: Update Excel File
 on:
   push:
     branches:
-      - main  # or your default branch
+      - main
 
 jobs:
   update-excel:
@@ -13,29 +13,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Download Python 3.9.19
-        run: |
-          wget https://github.com/actions/python-versions/releases/download/3.9.19-9962534424/python-3.9.19-linux-22.04-x64.tar.gz
-
-      - name: Verify and Extract Python 3.9.19
-        run: |
-          file python-3.9.19-linux-22.04-x64.tar.gz  # Check if the file is a valid gzip file
-          mkdir -p python3.9.19-extracted
-          tar -xzf python-3.9.19-linux-22.04-x64.tar.gz -C python3.9.19-extracted
-          ls -l python3.9.19-extracted  # List files in the extracted directory
-          find python3.9.19-extracted -type d  # List directories in the extracted directory
-
-      - name: Inspect Python 3.9.19 Tarball
-        run: |
-          tar -tzf python-3.9.19-linux-22.04-x64.tar.gz  # List the contents of the tarball
-          mkdir -p python3.9.19-extracted
-          tar -xzf python-3.9.19-linux-22.04-x64.tar.gz -C python3.9.19-extracted
-          ls -l python3.9.19-extracted  # List files in the extracted directory
-          find python3.9.19-extracted -type d  # List directories in the extracted directory
-
-
       - name: Set up Python
         run: |
+          sudo apt-get update
+          sudo apt-get install -y python3.9 python3.9-distutils python3.9-venv
+          sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
+          sudo update-alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip3.9 1
+          
+      - name: Install pip and dependencies
+        run: |
+          python3.9 -m ensurepip --upgrade
           python3.9 -m pip install --upgrade pip
           pip3.9 install openpyxl
 
