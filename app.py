@@ -488,24 +488,113 @@
 #     app.run(debug=True, host='0.0.0.0', port=5000)
 
 
-from flask import Flask, request, jsonify
-import torch
-from transformers import AutoModelForTokenClassification, BertTokenizerFast
 import os
-import json
-import subprocess 
-
+from flask import Flask, request, jsonify
+import pandas as pd
+from github import Github
+from io import BytesIO
+import openpyxl
+from datetime import datetime
+import torch
+from transformers import AutoConfig, AutoModelForTokenClassification, BertTokenizerFast
 
 app = Flask(__name__)
 
+# GitHub setup
+GITHUB_TOKEN = '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'
+# GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
+REPO_NAME = 'vinothvikas1987/LLM_Android'
+FILE_PATH = 'Android.xlsx'
+
+g = Github(GITHUB_TOKEN)
+repo = g.get_repo(REPO_NAME)
+
+# Load the model and tokenizer
+config = AutoConfig.from_pretrained('model/config.json')
 model = AutoModelForTokenClassification.from_pretrained('model')
 tokenizer = BertTokenizerFast.from_pretrained('tokens')
 
-cumulative_results = {
-    "details": [],
-    "date": [],
-    "Group": []
-}
+DEFAULT_GROUPS = ['Mobile', 'Broadband', 'TDS', 'Salary', "Mobile Payment", 'Biowaste', 'Investment and Deposits', 'Loan', 'Rent', 'EB', 'UPI Payment', 'OTT', 'Swiggy', 'Others']
+
+def extract_year(date):
+    return pd.to_datetime(date).strftime('%Y')
+
+def extract_month(date):
+    return pd.to_datetime(date).strftime('%B')
+
+def create_new_sheet(writer, year):
+    df_new = pd.DataFrame({'Group': DEFAULT_GROUPS})
+    for month in pd.date_range(start='1/1/2024', end='12/31/2024', freq='MS').strftime("%B"):
+        df_new[month + '_Details'] = ''
+        df_new[month + '_Date'] = ''
+    df_new.to_excel(writer, sheet_name=year, index=False)
+
+def get_excel_from_github():
+    file_content = repo.get_contents(FILE_PATH)
+    return BytesIO(file_content.decoded_content)
+
+def save_excel_to_github(excel_buffer):
+    repo.update_file(FILE_PATH, f"Update Excel file {datetime.now()}", excel_buffer.getvalue(), repo.get_contents(FILE_PATH).sha)
+
+def save_to_excel(cumulative_results):
+    df = pd.DataFrame(cumulative_results)
+    print("Entered save to excel")
+
+    df['Year'] = df['date'].apply(extract_year)
+    df['Month'] = df['date'].apply(extract_month)
+    df['Month_Details'] = df.apply(lambda x: f"{x['Month']}_Details", axis=1)
+    df['Month_Date'] = df.apply(lambda x: f"{x['Month']}_Date", axis=1)
+
+    df[df['Month_Details']] = df['details']
+    df[df['Month_Date']] = df['date']
+
+    excel_buffer = get_excel_from_github()
+    
+    with pd.ExcelWriter(excel_buffer, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+        workbook = writer.book
+
+        for year in df['Year'].unique():
+            if year not in workbook.sheetnames:
+                create_new_sheet(writer, year)
+
+        for year, year_group in df.groupby('Year'):
+            df_excel = pd.read_excel(excel_buffer, sheet_name=year)
+
+            for month in pd.date_range(start='1/1/2024', end='12/31/2024', freq='MS').strftime("%B"):
+                df_excel[month + '_Details'] = df_excel[month + '_Details'].fillna('').astype(str)
+                df_excel[month + '_Date'] = df_excel[month + '_Date'].fillna('').astype(str)
+
+            for i, row in year_group.iterrows():
+                row['date'] = pd.to_datetime(row['date'])
+                month = row['date'].strftime('%B')
+                row = pd.DataFrame(row).transpose()
+                row = row.dropna(axis=1, how='all')
+                col_details = f"{month}_Details"
+                col_date = f"{month}_Date"
+                details = row[col_details][0]
+                date = row[col_date][0]
+
+                matching_idx = df_excel[df_excel['Group'].values == row['Group'].values].index
+
+                if not matching_idx.empty:
+                    idx = matching_idx[0]
+                    new_row = {'Group': '', month + '_Details': details, month + '_Date': date}
+                    df_excel = pd.concat([df_excel.iloc[:idx+1], pd.DataFrame([new_row]), df_excel.iloc[idx+1:]]).reset_index(drop=True)
+                else:
+                    new_row = {'Group': row['Group'], month + '_Details': details, month + '_Date': date}
+                    df_excel = pd.concat([df_excel, pd.DataFrame([new_row])], ignore_index=True)
+
+            for group in DEFAULT_GROUPS:
+                if group not in df_excel['Group'].values:
+                    new_row = {'Group': group}
+                    for month in pd.date_range(start='1/1/2024', end='12/31/2024', freq='MS').strftime("%B"):
+                        new_row[month + '_Details'] = ''
+                        new_row[month + '_Date'] = ''
+                    df_excel = pd.concat([df_excel, pd.DataFrame([new_row])], ignore_index=True)
+
+            df_excel.to_excel(writer, sheet_name=year, index=False, header=True)
+
+    save_excel_to_github(excel_buffer)
 
 temp_storage = []
 
@@ -572,15 +661,13 @@ def endpoint():
         transaction_details = data.get('transactionDetails')
         formatted_date = data.get('formattedDate')
 
+        # Perform inference using the model
         result = model_inference(transaction_details, formatted_date)
-        cumulative_results = result
-                
+        
         try:
-            subprocess.run(["git", "add", "android.xlsx"], check=True)
-            subprocess.run(["git", "commit", "-m", "Update Excel file with new inference results"], check=True)
-            subprocess.run(["git", "push"], check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Git command failed: {e}")
+            save_to_excel([result])  # Wrap the single result in a list
+        except Exception as e:
+            print(f"Failed to update Excel: {e}")
         
         return jsonify(result)
 
