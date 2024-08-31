@@ -544,28 +544,35 @@ def get_excel_from_github():
     return BytesIO(file_content.decoded_content)
 
 def save_excel_to_github(excel_buffer):
-    # repo.update_file(FILE_PATH, f"Update Excel file {datetime.now()}", excel_buffer.getvalue(), repo.get_contents(FILE_PATH).sha)
-    excel_buffer.seek(0)
-    content = excel_buffer.getvalue()
+    try:
+            
+        # repo.update_file(FILE_PATH, f"Update Excel file {datetime.now()}", excel_buffer.getvalue(), repo.get_contents(FILE_PATH).sha)
+        excel_buffer.seek(0)
+        content = excel_buffer.getvalue()
+        
+        # Get the current commit
+        ref = repo.get_git_ref('heads/main')
+        commit = repo.get_commit(ref.object.sha)
+        base_tree = commit.commit.tree
     
-    # Get the current commit
-    ref = repo.get_git_ref('heads/main')
-    commit = repo.get_commit(ref.object.sha)
-    base_tree = commit.tree
+        # Create a new blob with the updated Excel file
+        blob = repo.create_git_blob(base64.b64encode(content).decode(), "base64")
+        element = InputGitTreeElement(path=FILE_PATH, mode='100644', type='blob', sha=blob.sha)
+    
+        # Create a new tree with the updated file
+        tree = repo.create_git_tree([element], base_tree)
+    
+        # Create a new commit
+        parent = repo.get_git_commit(ref.object.sha)
+        commit = repo.create_git_commit(f"Update Excel file {datetime.now()}", tree, [parent])
+    
+        # Update the reference
+        ref.edit(commit.sha)
+        logger.debug("Successfully updated GitHub repository")
 
-    # Create a new blob with the updated Excel file
-    blob = repo.create_git_blob(base64.b64encode(content).decode(), "base64")
-    element = InputGitTreeElement(path=FILE_PATH, mode='100644', type='blob', sha=blob.sha)
-
-    # Create a new tree with the updated file
-    tree = repo.create_git_tree([element], base_tree)
-
-    # Create a new commit
-    parent = repo.get_git_commit(ref.object.sha)
-    commit = repo.create_git_commit(f"Update Excel file {datetime.now()}", tree, [parent])
-
-    # Update the reference
-    ref.edit(commit.sha)
+    except Exception as e:
+        logger.error(f"FAILED:{str(e)}".exc_info=True)
+        raise
 
 def save_to_excel(cumulative_results):
     df = pd.DataFrame(cumulative_results)
