@@ -571,7 +571,7 @@ def save_excel_to_github(excel_buffer):
         logger.debug("Successfully updated GitHub repository")
 
     except Exception as e:
-        logger.error(f"FAILED:{str(e)}".exc_info=True)
+        logger.error(f"FAILED:{str(e)}",exc_info=True)
         raise
 
 def save_to_excel(cumulative_results):
