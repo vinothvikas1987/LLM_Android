@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 'Python 3.9.18'  # Replace with your Python version
+          python-version: 'Python 3.9.19'  # Replace with your Python version
 
       - name: Install dependencies
         run: |
