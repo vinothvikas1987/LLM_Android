@@ -498,6 +498,10 @@ import openpyxl
 from datetime import datetime
 import torch
 from transformers import AutoConfig, AutoModelForTokenClassification, BertTokenizerFast
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -687,15 +691,19 @@ def endpoint():
         data = request.get_json()
         transaction_details = data.get('transactionDetails')
         formatted_date = data.get('formattedDate')
+        logger.debug(f"Received request: {transaction_details}, {formatted_date}")
 
         # Perform inference using the model
         result = model_inference(transaction_details, formatted_date)
         
         try:
+            logger.debug("Attempting to save to Excel")
             save_to_excel([result])  # Wrap the single result in a list
+            logger.debug("Successfully saved to Excel")
         except Exception as e:
-            print(f"Failed to update Excel: {e}")
-        
+            logger.debug("Attempting to save to Excel")
+            save_to_excel([result])  # Wrap the single result in a list
+            logger.debug("Successfully saved to Excel")
         return jsonify(result)
 
 if __name__ == '__main__':
