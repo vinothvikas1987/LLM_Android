@@ -637,16 +637,22 @@ def save_to_excel(cumulative_results):
 temp_storage = []
 
 def model_inference(transaction_details, formatted_date):
+    # Tokenize the input text
+    print("transaction det",transaction_details)
     inputs = tokenizer(transaction_details, return_tensors="pt", truncation=True, padding=True)
+    # Perform model inference
     with torch.no_grad():
         outputs = model(**inputs)
        
+    # Process model outputs
     logits = outputs.logits
     predicted_label_ids = torch.argmax(logits, dim=2)
     label_list = ["O", "B-NAME", "I-NAME", "B-SENT_TO", "I-SENT_TO"]
 
+    # Convert label IDs to label names
     predictions = [label_list[label_id] for label_id in predicted_label_ids[0].cpu().numpy()]
     
+    # Example: Process predictions (print or log them)
     tokens = tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
     word_pieces = []
     current_label = "O"
@@ -667,27 +673,82 @@ def model_inference(transaction_details, formatted_date):
                 word_pieces = []
 
             current_label = prediction
+    print("current",collected_sent_to)
 
     if word_pieces and current_label == "B-SENT_TO":
         collected_sent_to.append(''.join(word_pieces))
     
-    group_category = "Others"
     iteration = collected_sent_to
    
-    mobile = ["AirtelPostpaid", "jiomobile", "airtel"]
+    mobile = ["AirtelPostpaid","AirtelPostpaidB","jiomobili","jio","jiomobile","viposvf","vipos","vi","airtel"]
+    broad_band = ['AirtelBroadband']
+    ott = ["spotify","netflix",]
+    mobile_payment = ["EDC"]
+    investment = ["ICICI PRUDENTIAL ASSET MA","Lic Of India","AXISDIRECT", "DEPOSIT", "INVESTM", "KOTAK MF", "ICIPRU", "FTMF", "MAX LIFE INSURANCE", "MAX LIFE","SIPPRM"]
+    salary = ["Dhanamma A M","Sumathi","Nagamani","Gayatri", "Sathya Priya S","sridevinagesh","Nagalakshmi Murugan","salary"]
+    biowaste = ["Teknothermindustries"]
+    loan = ['amazeloan']
+    rent = ["Karthik vijay shah"]
+    swiggy = ['swiggy']
+
     mobile_lower = [m.lower() for m in mobile]
+    broad_band_lower = [b.lower() for b in broad_band]
+    mobile_payment_lower = [mp.lower() for mp in mobile_payment]
+    ott_lower = [o.lower() for o in ott]
+    investment_lower  = [i.lower() for i in investment]
+    salary_lower  = [s.lower() for s in salary]    
+    biowaste_lower = [b.lower() for b in biowaste]
+    loan_lower = [l.lower() for l in loan]
+    rent_lower = [r.lower() for r in rent]
+    swiggy_lower = [s.lower() for s in swiggy]
+
+    
+    
+    # specific_keywords = [,"SriMeenatchiPharma","Sri Sairam Agencies","ASCENT THERAPEUTICS","SUCESS PHARMAAVACCINE",,"INTERNET TAX PAYMENT","Freedom diagonostics","citypharma","LPG SUBSIDY","ANBU PHARMACY","grocery",  "ACVERIFY",]
 
     for collected_sent in iteration:
         collected_sent_to_lower = collected_sent.lower()
         if any(m in collected_sent_to_lower for m in mobile_lower):
             group_category = "Mobile"
             break
+        elif any(b in collected_sent_to_lower for b in broad_band_lower):
+            group_category = "Broadband"
+            break
+        elif any(mp in collected_sent_to_lower for mp in mobile_payment_lower):
+            group_category = "UPI Payment"
+            break
+        elif any(o in collected_sent_to_lower for o in ott_lower):
+            group_category = "OTT"
+            break
+        elif any(i in collected_sent_to_lower for i in investment_lower):
+            group_category = "Investment and Deposits"
+            break
+        elif any(s in collected_sent_to_lower for s in salary_lower):
+            group_category = "Salary"
+            break
+        elif any(b in collected_sent_to_lower for b in biowaste_lower):
+            group_category = "Biowaste"
+            break
+        elif any(l in collected_sent_to_lower for l in loan_lower):
+            group_category = "Loan"
+            break
+        elif any(r in collected_sent_to_lower for r in rent_lower):
+            group_category = "Rent"
+            break
+        elif any(s in collected_sent_to_lower for s in swiggy_lower):
+            group_category = "Swiggy"
+            break
+        else:
+            group_category = "Others"
 
+    # Prepare the result to be returned
     result = {
         "Group": group_category,
         "details": collected_sent_to,
         "date": formatted_date,
     }
+    logger.info(f"Result created: {result}")
+    
     return result
 
 
