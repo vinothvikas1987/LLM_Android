@@ -582,7 +582,7 @@ def save_to_excel(cumulative_results):
     df['Month'] = df['date'].apply(extract_month)
     df['Month_Details'] = df.apply(lambda x: f"{x['Month']}_Details", axis=1)
     df['Month_Date'] = df.apply(lambda x: f"{x['Month']}_Date", axis=1)
-
+    df['details'] = df['details'].apply(lambda x: ' '.join(x) if isinstance(x, list) else x)
     df[df['Month_Details']] = df['details']
     df[df['Month_Date']] = df['date']
 
